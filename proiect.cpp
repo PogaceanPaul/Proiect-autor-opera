@@ -26,13 +26,11 @@ map<wchar_t, int> romana = {
     {L'î', 5}, {L'â', 4}, {L'ă', 3}, {L'j', 2}, {L'x', 1}
 };
 
-
 map<wchar_t, int> english = {
     {L'e', 25}, {L't', 24}, {L'a', 23}, {L'o', 22}, {L'i', 21}, {L'n', 20}, {L's', 19}, {L'r', 18}, {L'h', 17}, {L'l', 16},
     {L'd', 15}, {L'c', 14}, {L'm', 13}, {L'f', 12}, {L'u', 11}, {L'p', 10}, {L'g', 9}, {L'b', 8}, {L'y', 7}, {L'v', 6},
     {L'k', 5}, {L'x', 4}, {L'j', 3}, {L'q', 2}, {L'z', 1}
 };
-
 
 map<wchar_t, int> deutsch = {
     {L'e', 25}, {L'n', 24}, {L'i', 23}, {L's', 22}, {L'r', 21}, {L'a', 20}, {L't', 19}, {L'u', 18}, {L'd', 17}, {L'h', 16},
@@ -40,6 +38,31 @@ map<wchar_t, int> deutsch = {
     {L'ä', 5}, {L'ö', 4}, {L'ü', 3}, {L'ß', 2}, {L'w', 1}
 };
 
+// Updated: Using `wchar_t` instead of `wstring` for Hungarian characters.
+map<wchar_t, int> hungarian = {
+    {L'e', 25}, {L'a', 24}, {L't', 23}, {L'n', 22}, {L'l', 21}, {L's', 20}, {L'r', 19}, {L'i', 18}, {L'k', 17},
+    {L'o', 16}, {L'm', 15}, {L'v', 14}, {L'g', 13}, {L'ü', 12}, {L'ö', 11}, {L'ó', 10}, {L'á', 9}, {L'í', 8},
+    {L'ű', 7}, {L'ú', 6}
+};
+
+
+map<wchar_t, int> turkish = {
+    {L'a', 25}, {L'e', 24}, {L'i', 23}, {L'n', 22}, {L'r', 21}, {L'l', 20}, {L'k', 19}, {L't', 18}, {L'm', 17},
+    {L'u', 16}, {L'ş', 15}, {L'o', 14}, {L'b', 13}, {L'v', 12}, {L'ç', 11}, {L'g', 10}, {L'ğ', 9}, {L's', 8},
+    {L'ü', 7}, {L'ö', 6}, {L'ı', 5}, {L'd', 4}, {L'p', 3}, {L'y', 2}, {L'z', 1}
+};
+
+// Set care conține toate digrafele maghiare
+set<wstring> digraphs = {L"cs", L"dz", L"gy", L"ly", L"ny", L"sz", L"zs"};
+
+// Funcție pentru a verifica dacă la poziția curentă există un digraf
+bool isDigraph(const wstring& line, size_t idx) {
+    if (idx < line.size() - 1) {  // Se sigură că există cel puțin 2 caractere disponibile
+        wstring potentialDigraph = line.substr(idx, 2);
+        return digraphs.find(potentialDigraph) != digraphs.end();  // Verifică dacă este un digraf
+    }
+    return false;
+}
 
 int calculateScore(const vector<wchar_t>& topLetters, const map<wchar_t, int>& languageSet) {
     int score = 0;
@@ -81,6 +104,13 @@ int main() {
             }
 
             tot++;
+
+            // Verificăm pentru digrafe maghiare
+            if (isDigraph(line, i)) {
+                freqMap[line[i]]++;  // Numărăm primul caracter al digrafului
+                i++;  // Sărim peste al doilea caracter al digrafului
+                continue;
+            }
 
             // Dacă litera este capitală și nu face parte dintr-o secvență de litere mari, o transformăm în mică
             if (iswupper(ch) && isIsolatedUppercase(line, i)) {
@@ -130,21 +160,30 @@ int main() {
     int romanianScore = calculateScore(top10Letters, romana);
     int englishScore = calculateScore(top10Letters, english);
     int germanScore = calculateScore(top10Letters, deutsch);
+    int hungarianScore = calculateScore(top10Letters, hungarian);
+    int turkishScore = calculateScore(top10Letters, turkish);
 
     // Determinăm limba cu cel mai mare scor
     fout << L"Romanian Score: " << romanianScore << endl;
     fout << L"English Score: " << englishScore << endl;
     fout << L"German Score: " << germanScore << endl;
+    fout << L"Hungarian Score: " << hungarianScore << endl;
+    fout << L"Turkish Score: " << turkishScore << endl;
 
-    if (romanianScore > englishScore && romanianScore > germanScore) {
-        fout << L"ROMÂNĂ" << endl;
-    } else if (englishScore > romanianScore && englishScore > germanScore) {
-        fout << L"ENGLISH" << endl;
-    } else if (germanScore > romanianScore && germanScore > englishScore) {
-        fout << L"DEUTSCH" << endl;
-    } else {
-        fout << L"Limba detectată este ambiguă, scoruri egale." << endl;
-    }
+    if (romanianScore > englishScore && romanianScore > germanScore && romanianScore > hungarianScore && romanianScore > turkishScore) {
+    fout << L"ROMÂNĂ" << endl;
+} else if (englishScore > romanianScore && englishScore > germanScore && englishScore > hungarianScore && englishScore > turkishScore) {
+    fout << L"ENGLISH" << endl;
+} else if (germanScore > romanianScore && germanScore > englishScore && germanScore > hungarianScore && germanScore > turkishScore) {
+    fout << L"DEUTSCH" << endl;
+} else if (hungarianScore > romanianScore && hungarianScore > englishScore && hungarianScore > germanScore && hungarianScore > turkishScore) {
+    fout << L"HUNGARIAN" << endl;
+} else if (turkishScore > romanianScore && turkishScore > englishScore && turkishScore > germanScore && turkishScore > hungarianScore) {
+    fout << L"TURKISH" << endl;
+} else {
+    fout << L"Limba detectată este ambiguă, scoruri egale." << endl;
+}
+
 
     return 0;
 }
